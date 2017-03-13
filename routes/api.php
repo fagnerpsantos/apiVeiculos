@@ -13,4 +13,5 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::get('veiculos_pagina/{q}/{p}', 'VeiculoController@veiculo_page');
 Route::resource('veiculos', 'VeiculoController');

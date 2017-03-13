@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Validator;
 use App\Veiculo;
+use Illuminate\Pagination\Paginator;
 
 class VeiculoController extends Controller
 {
@@ -28,7 +29,7 @@ class VeiculoController extends Controller
     public function index()
     {
         $veiculo = Veiculo::all();
-        return response()->json(['data'=>$veiculo, 'status'=>true]);
+        return response()->json(['data'=>$veiculo], 200);
     }
 
     /**
@@ -125,6 +126,15 @@ class VeiculoController extends Controller
         }else{
             return response()->json(['response'=>'O veículo com id '.$id.' não existe'], 404);
         }
+    }
+
+    public function veiculo_page($qtd, $page){
+        Paginator::currentPageResolver(function () use ($page) {
+            return $page;
+        });
+        $veiculos = Veiculo::paginate($qtd);
+        return response()->json(['response'=>$veiculos], 200);
+
     }
     
 }
