@@ -10,11 +10,10 @@ use Illuminate\Pagination\Paginator;
 class VeiculoController extends Controller
 {
 
-    protected function veiculoValidator($request){
+    protected function validarVeiculo($request){
         $validator = Validator::make($request->all(),[
             'marca' => 'required',
             'modelo' => 'required',
-            'cor' => 'required',
             'ano' => 'required',
             'preco' => 'required|numeric|min:0',
             ]);
@@ -26,9 +25,18 @@ class VeiculoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $veiculo = Veiculo::all();
+
+        $qtd = $request['qtd'];
+        $page = $request['pagina'];
+
+        Paginator::currentPageResolver(function () use ($page) {
+            return $page;
+        });
+        
+        $veiculo = Veiculo::paginate($qtd);
+
         return response()->json(['data'=>$veiculo], 200);
     }
 
@@ -40,22 +48,22 @@ class VeiculoController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = $this->veiculoValidator($request);
+        $validator = $this->validarVeiculo($request);
         if($validator->fails()){
-            return response()->json(['response'=>'Erro', 
+            return response()->json(['message'=>'Erro', 
                 'errors' => $validator->errors()], 
                 400);
         }
-        $data = $request->only(['marca', 'modelo', 'cor', 'ano', 'preco']);
+        $data = $request->only(['marca', 'modelo', 'ano', 'preco']);
         if($data){
             $veiculo = Veiculo::create($data);
             if($veiculo){
-                return response()->json(['response'=>'Veículo criado com sucesso', 'data'=> $veiculo], 201);
+                return response()->json(['data'=> $veiculo], 201);
             }else{
-                return response()->json(['response'=>'Erro ao criar o veículo', 'data'=> $veiculo], 201);
+                return response()->json(['message'=>'Erro ao criar o veículo', 'data'=> $veiculo], 201);
             }
         }else{
-            return response()->json(['response'=>'Dados inválidos'], 400);
+            return response()->json(['message'=>'Dados inválidos'], 400);
         }        
     }
 
@@ -68,13 +76,13 @@ class VeiculoController extends Controller
     public function show($id)
     {
         if($id < 0){
-            return response()->json(['response'=>'ID menor que zero'], 400);
+            return response()->json(['message'=>'ID menor que zero, por favor, informe um ID válido'], 400);
         }
         $veiculo = Veiculo::find($id);
         if($veiculo){
             return response()->json(['data'=> $veiculo], 200);
         }else{
-            return response()->json(['response'=>'O veículo com id '.$id.' não existe'], 404);
+            return response()->json(['message'=>'O veículo com id '.$id.' não existe'], 404);
         }
 
     }
@@ -88,23 +96,23 @@ class VeiculoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $validator = $this->veiculoValidator($request);
+        $validator = $this->validarVeiculo($request);
         if($validator->fails()){
-            return response()->json(['response'=>'Erro', 
+            return response()->json(['message'=>'Erro', 
                 'errors' => $validator->errors()], 
                 400);
         }
-        $data = $request->only(['marca', 'modelo', 'cor', 'ano', 'preco']);
+        $data = $request->only(['marca', 'modelo', 'ano', 'preco']);
         if($data){
             $veiculo = Veiculo::find($id);
             if($veiculo){
                 $veiculo->update($data);
-                return response()->json(['response'=>'Veículo atualizado com sucesso', 'data'=> $veiculo], 200);
+                return response()->json(['data'=> $veiculo], 200);
             }else{
-                return response()->json(['response'=>'O veículo com id '.$id.' não existe'], 400);
+                return response()->json(['message'=>'O veículo com id '.$id.' não existe'], 400);
             }
         }else{
-            return response()->json(['response'=>'Dados inválidos'], 400);
+            return response()->json(['message'=>'Dados inválidos'], 400);
         }
     }
 
@@ -117,24 +125,15 @@ class VeiculoController extends Controller
     public function destroy($id)
     {
         if($id < 0){
-            return response()->json(['response'=>'ID menor que zero'], 400);
+            return response()->json(['message'=>'ID menor que zero, por favor, informe um ID válido'], 400);
         }
         $veiculo = Veiculo::find($id);
         if($veiculo){
             $veiculo->delete();
-            return response()->json(['response'=>'Veículo removido com sucesso'], 200);
+            return response()->json([], 200);
         }else{
-            return response()->json(['response'=>'O veículo com id '.$id.' não existe'], 404);
+            return response()->json(['message'=>'O veículo com id '.$id.' não existe'], 404);
         }
-    }
-
-    public function veiculo_page($qtd, $page){
-        Paginator::currentPageResolver(function () use ($page) {
-            return $page;
-        });
-        $veiculos = Veiculo::paginate($qtd);
-        return response()->json(['response'=>$veiculos], 200);
-
     }
     
 }

@@ -17,7 +17,6 @@ class CreateVeiculosTable extends Migration
             $table->increments('id');
             $table->string('marca');
             $table->string('modelo');
-            $table->string('cor');
             $table->integer('ano');
             $table->float('preco');
             $table->timestamps();
