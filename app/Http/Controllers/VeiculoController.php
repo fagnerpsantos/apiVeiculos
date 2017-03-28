@@ -29,15 +29,18 @@ class VeiculoController extends Controller
     {
 
         $qtd = $request['qtd'];
-        $page = $request['pagina'];
+        $page = $request['page'];
 
         Paginator::currentPageResolver(function () use ($page) {
             return $page;
         });
-        
-        $veiculo = Veiculo::paginate($qtd);
 
-        return response()->json(['data'=>$veiculo], 200);
+        $veiculo = Veiculo::paginate($qtd);
+        
+        $veiculo = $veiculo->appends(Request::capture()->except('page')); 
+
+        return response()->json(['veiculos'=>$veiculo], 200);
+        
     }
 
     /**
@@ -80,7 +83,7 @@ class VeiculoController extends Controller
         }
         $veiculo = Veiculo::find($id);
         if($veiculo){
-            return response()->json(['data'=> $veiculo], 200);
+            return response()->json([$veiculo], 200);
         }else{
             return response()->json(['message'=>'O veículo com id '.$id.' não existe'], 404);
         }
@@ -130,7 +133,7 @@ class VeiculoController extends Controller
         $veiculo = Veiculo::find($id);
         if($veiculo){
             $veiculo->delete();
-            return response()->json([], 200);
+            return response()->json([], 204);
         }else{
             return response()->json(['message'=>'O veículo com id '.$id.' não existe'], 404);
         }
