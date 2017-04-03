@@ -35,11 +35,11 @@ class VeiculoController extends Controller
                 return $page;
             });
 
-            $veiculo = Veiculo::paginate($qtd);
+            $veiculos = Veiculo::paginate($qtd);
             
-            $veiculo = $veiculo->appends(Request::capture()->except('page')); 
+            $veiculos = $veiculos->appends(Request::capture()->except('page')); 
 
-            return response()->json(['veiculos'=>$veiculo], 200);
+            return response()->json(['veiculos'=>$veiculos], 200);
         } catch (\Exception $e){
             return response()->json('Ocorreu um erro no servidor', 500);
         }
