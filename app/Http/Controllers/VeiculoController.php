@@ -14,7 +14,7 @@ class VeiculoController extends Controller
         $validator = Validator::make($request->all(),[
             'marca' => 'required',
             'modelo' => 'required',
-            'ano' => 'required',
+            'ano' => 'required|numeric|min:0',
             'preco' => 'required|numeric|min:0',
             ]);
         return $validator;
@@ -27,19 +27,22 @@ class VeiculoController extends Controller
      */
     public function index(Request $request)
     {
+        try{
+            $qtd = $request['qtd'];
+            $page = $request['page'];
 
-        $qtd = $request['qtd'];
-        $page = $request['page'];
+            Paginator::currentPageResolver(function () use ($page) {
+                return $page;
+            });
 
-        Paginator::currentPageResolver(function () use ($page) {
-            return $page;
-        });
+            $veiculo = Veiculo::paginate($qtd);
+            
+            $veiculo = $veiculo->appends(Request::capture()->except('page')); 
 
-        $veiculo = Veiculo::paginate($qtd);
-        
-        $veiculo = $veiculo->appends(Request::capture()->except('page')); 
-
-        return response()->json(['veiculos'=>$veiculo], 200);
+            return response()->json(['veiculos'=>$veiculo], 200);
+        } catch (\Exception $e){
+            return response()->json('Ocorreu um erro no servidor', 500);
+        }
         
     }
 
@@ -51,6 +54,7 @@ class VeiculoController extends Controller
      */
     public function store(Request $request)
     {
+        try{
         $validator = $this->validarVeiculo($request);
         if($validator->fails()){
             return response()->json(['message'=>'Erro', 
@@ -67,7 +71,10 @@ class VeiculoController extends Controller
             }
         }else{
             return response()->json(['message'=>'Dados inválidos'], 400);
-        }        
+        }     
+        }catch (\Exception $e){
+            return response()->json('Ocorreu um erro no servidor', 500);
+        }   
     }
 
     /**
@@ -78,6 +85,7 @@ class VeiculoController extends Controller
      */
     public function show($id)
     {
+        try{
         if($id < 0){
             return response()->json(['message'=>'ID menor que zero, por favor, informe um ID válido'], 400);
         }
@@ -86,6 +94,9 @@ class VeiculoController extends Controller
             return response()->json([$veiculo], 200);
         }else{
             return response()->json(['message'=>'O veículo com id '.$id.' não existe'], 404);
+        }
+    }catch (\Exception $e){
+            return response()->json('Ocorreu um erro no servidor', 500);
         }
 
     }
@@ -99,6 +110,7 @@ class VeiculoController extends Controller
      */
     public function update(Request $request, $id)
     {
+        try{
         $validator = $this->validarVeiculo($request);
         if($validator->fails()){
             return response()->json(['message'=>'Erro', 
@@ -117,6 +129,9 @@ class VeiculoController extends Controller
         }else{
             return response()->json(['message'=>'Dados inválidos'], 400);
         }
+    }catch (\Exception $e){
+            return response()->json('Ocorreu um erro no servidor', 500);
+        }
     }
 
     /**
@@ -127,6 +142,7 @@ class VeiculoController extends Controller
      */
     public function destroy($id)
     {
+        try{
         if($id < 0){
             return response()->json(['message'=>'ID menor que zero, por favor, informe um ID válido'], 400);
         }
@@ -136,6 +152,9 @@ class VeiculoController extends Controller
             return response()->json([], 204);
         }else{
             return response()->json(['message'=>'O veículo com id '.$id.' não existe'], 404);
+        }
+    }catch (\Exception $e){
+            return response()->json('Ocorreu um erro no servidor', 500);
         }
     }
     
